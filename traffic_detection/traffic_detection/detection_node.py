@@ -83,36 +83,29 @@ class DetectionNode(Node):
             return
 
         # run both models
-        car_boxes, _  = self.get_boxes(self.car_model,  cv_img,
-                                       ["car", "motorcycle", "bus", "truck", "train"])
-        cw_boxes, _   = self.get_boxes(self.cwtl_model, cv_img, ["Zebra_Cross"])
-        tl_boxes, tl_cls = self.get_boxes_with_class(self.cwtl_model, cv_img,
-                                                     ["R_Signal", "G_Signal"])
+        car_boxes, _, _ = self.detect_objects(self.car_model, cv_img,
+                                              ["car", "motorcycle", "bus", "truck", "train"])
+        cross_boxes, _, _ = self.detect_objects(self.cwtl_model, cv_img,
+                                                ["Zebra_Cross"])
+        tl_boxes, _, tl_classes = self.detect_objects(self.cwtl_model, cv_img,
+                                                      ["R_Signal", "G_Signal"])
 
-        annotated = self.draw_boxes(cv_img.copy(), car_boxes, cw_boxes,
-                                    tl_boxes, tl_cls)
+        annotated = self.draw_boxes(cv_img.copy(), car_boxes, cross_boxes,
+                                    tl_boxes, tl_classes)
 
         self.publish_debug_image(annotated)
 
     # ---  helper functions  ---
-    def get_boxes(self, model, img, wanted, conf_thr=0.3):
+    def detect_objects(self, model, img, wanted, conf_thr=0.3):
         res = model(img)
-        boxes, scores = [], []
-        for *xyxy, conf, cls in res.xyxy[0]:
-            if conf >= conf_thr and model.names[int(cls)] in wanted:
-                boxes.append(xyxy)
-                scores.append(conf.item())
-        return boxes, scores
-
-    def get_boxes_with_class(self, model, img, wanted, conf_thr=0.3):
-        res = model(img)
-        boxes, classes = [], []
+        boxes, scores, classes = [], [], []
         for *xyxy, conf, cls in res.xyxy[0]:
             name = model.names[int(cls)]
             if conf >= conf_thr and name in wanted:
                 boxes.append(xyxy)
+                scores.append(conf.item())
                 classes.append(name)
-        return boxes, classes
+        return boxes, scores, classes
 
     def draw_boxes(self, img, car_b, cross_b, tl_b, tl_cls):
         # cars = blue, crosswalks = green, traffic lights red/green
@@ -132,7 +125,7 @@ class DetectionNode(Node):
             color = (0, 0, 255) if cls == "R_Signal" else (0, 255, 0)
             cv2.rectangle(img, (int(b[0]), int(b[1])), (int(b[2]), int(b[3])),
                           color, 2)
-            cv2.putText(img, cls, (int(b[0]), int(b[1] - 10)),
+            cv2.putText(img, cls, (int(b[0]), int(b[1]) - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
         return img
