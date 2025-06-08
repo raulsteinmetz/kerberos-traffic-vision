@@ -1,4 +1,6 @@
 from setuptools import setup
+import os
+from glob import glob
 
 package_name = 'traffic_detection'
 
@@ -11,6 +13,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch', ['launch/detection.launch.py']),
+        ('share/' + package_name + '/models', glob('models/*.pt')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -18,7 +21,7 @@ setup(
     maintainer_email='raulsteinmetz0808@gmail.com',
     description='Minimal ROS 2 node with pub/sub for testing.',
     license='MIT',
-    entry_points= {
+    entry_points={
         'console_scripts': [
             'detection_node = traffic_detection.detection_node:main',
             'test_controller = traffic_detection.test_controller:main',

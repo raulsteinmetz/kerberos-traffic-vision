@@ -14,12 +14,12 @@ class TestController(Node):
     def __init__(self):
         super().__init__('test_controller')
 
-        # --- --- pubs --- ---
+        # --- publishers ---
         self.detection_switch_pub = self.create_publisher(String, '/flag/detection_switch', 10)
         self.load_yolo_pub = self.create_publisher(Bool, '/flag/load_yolo', 10)
         self.image_pub = self.create_publisher(CompressedImage, '/usb_cam1/image_raw/compressed', 10)
 
-        # --- --- sending images for detection --- ---
+        # --- test image file names
         image_dir = os.path.expanduser('~/ros2_ws/src/traffic_detection/test_data/dataset_1')
         self.image_files = sorted([
             os.path.join(image_dir, f)
@@ -28,22 +28,21 @@ class TestController(Node):
         ])
         self.image_index = 0
 
-        # periodic publishing
+        # --- publish slowly for the bug (1 per second)
         self.timer = self.create_timer(1.0, self.timer_callback)
         self.state = 0
 
         self.get_logger().info(f'TestController started. {len(self.image_files)} images loaded.')
 
     def timer_callback(self):
-        # 'switch yolo on' and 'load yolo' messages
         if self.state == 0:
-            self.detection_switch_pub.publish(String(data='Start'))
+            self.detection_switch_pub.publish(String(data='Start')) #  start detection
             self.get_logger().info('Published: Start')
         elif self.state == 1:
-            self.load_yolo_pub.publish(Bool(data=True))
+            self.load_yolo_pub.publish(Bool(data=True)) # load models
             self.get_logger().info('Published: load_yolo = True')
 
-        # publish one image per call_back
+        # publish one image every ~1 second
         if self.image_index < len(self.image_files):
             img_path = self.image_files[self.image_index]
             img = cv2.imread(img_path)
@@ -61,9 +60,9 @@ class TestController(Node):
             self.image_index += 1
         else:
             self.get_logger().info('All images published. Sending Stop signal.')
-            self.detection_switch_pub.publish(String(data='Stop')) # node should stop detection
-            self.load_yolo_pub.publish(Bool(data=False)) # free up gpu or cpu memory (delete yolo model)
-            self.get_logger().info('Published: Stop and load_yolo = False')
+            self.detection_switch_pub.publish(String(data='Stop')) # stop detection
+            self.load_yolo_pub.publish(Bool(data=False)) # unload model
+            self.get_logger().info('Published stop and unload signals.')
             self.timer.cancel()
 
         self.state += 1
