@@ -1,5 +1,0 @@
-rm -f data/crosswalk/*.cache
-yolo segment train \
-     model=yolo11n-seg.pt \
-     data=data/crosswalk/crosswalk.yaml \
-     imgsz=640 epochs=100 batch=16

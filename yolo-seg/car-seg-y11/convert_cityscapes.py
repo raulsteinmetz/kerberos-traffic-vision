@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+
+'''
+    this will make cityscapes dataset into yolo format,
+    it will also unite all vehicle classes into one label.
+'''
+
 import json, shutil
 from pathlib import Path
 
@@ -53,4 +59,4 @@ test: images/test
 names:
   0: vehicle
 """)
-print("✅ labels rebuilt with correct names")
+print("labels rebuilt with vehicle name")

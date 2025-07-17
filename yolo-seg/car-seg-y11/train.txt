@@ -1,0 +1,7 @@
+yolo segment train \
+  data=/path/to/crosswalk.yaml \
+  model=yolo11n-seg.pt \
+  epochs=100 \
+  imgsz=640 \
+  rect=False
+  batch=128
