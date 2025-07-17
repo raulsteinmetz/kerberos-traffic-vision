@@ -4,8 +4,8 @@ import numpy as np
 from ultralytics import YOLO
 
 # load trained instance segmentation models (yolo11)
-car_model = YOLO('./car-seg-y11/model/weights/best.pt')
-crosswalk_model = YOLO('./cross-walk-seg-y11/model/weights/best.pt')
+car_model = YOLO('./car-seg-y11/model_finetuned/weights/best.pt')
+crosswalk_model = YOLO('./cross-walk-seg-y11/model_finetuned/weights/best.pt')
 
 # input size size
 WIDTH, HEIGHT = 640, 640
