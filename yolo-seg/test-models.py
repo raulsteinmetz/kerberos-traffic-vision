@@ -1,61 +1,90 @@
+#!/usr/bin/env python3
+
 import os
 import cv2
 import numpy as np
 from ultralytics import YOLO
 
-# load trained instance segmentation models (yolo11)
-car_model = YOLO('./car-seg-y11/model_finetuned/weights/best.pt')
-crosswalk_model = YOLO('./cross-walk-seg-y11/model_finetuned/weights/best.pt')
+CAR_MODEL_PATH       = "./car_bb.pt"
+CROSSWALK_MODEL_PATH = "./crosswalk_seg.pt"
+IMAGE_DIR            = "../traffic-detection/test-data/"
 
-# input size size
-WIDTH, HEIGHT = 640, 640
-image_dir = '../traffic-detection/test-data/'
+WIDTH, HEIGHT  = 640, 640
+MIN_CONF       = 0.40
+MASK_THRESH    = 0.25
+DILATE_KERNEL  = 15
 
-CAR_COLOR = (0, 0, 255)
-XWALK_COLOR = (0, 255, 0)
-ALPHA = 0.5
+CAR_COLOR        = (0, 0, 255)
+XWALK_COLOR      = (0, 255, 0)
+OVERLAP_COLOR    = (0, 255, 255)
+NO_OVERLAP_COLOR = (255, 0, 0)
+ALPHA            = 0.4
 
-def overlay_masks(result, base_img, color):
-    if not hasattr(result, 'masks') or result.masks is None:
-        return base_img
-    mask_data = result.masks.data.cpu().numpy()  # shape: (N, H, W)
-    for m in mask_data:
-        m_bin = (m > 0.5).astype(np.uint8)
-        colored = np.zeros_like(base_img, dtype=np.uint8)
+car_model   = YOLO(CAR_MODEL_PATH)
+xwalk_model = YOLO(CROSSWALK_MODEL_PATH)
+
+def overlay_masks(result, img, color):
+    '''Overlay segmentation masks from the result onto an image using a specified color'''
+    if not getattr(result, "masks", None):
+        return img
+    masks = result.masks.data.cpu().numpy()
+    for m in masks:
+        bin_mask = m > MASK_THRESH
+        colored = np.zeros_like(img, dtype=np.uint8)
         colored[:] = color
-        base_img = np.where(
-            m_bin[..., None],
-            cv2.addWeighted(base_img, 1 - ALPHA, colored, ALPHA, 0),
-            base_img
-        )
-    return base_img
+        img = np.where(bin_mask[..., None],
+                       cv2.addWeighted(img, 1 - ALPHA, colored, ALPHA, 0),
+                       img)
+    return img
 
-for filename in sorted(os.listdir(image_dir)):
-    path = os.path.join(image_dir, filename)
+for fname in sorted(os.listdir(IMAGE_DIR)):
+    path = os.path.join(IMAGE_DIR, fname)
     img = cv2.imread(path)
     if img is None:
         continue
+
     img = cv2.resize(img, (WIDTH, HEIGHT))
-    result_img = img.copy()
+    vis = img.copy()
 
-    car_r = car_model.predict(source=img, imgsz=(WIDTH, HEIGHT), conf=0.25)[0]
-    cw_r = crosswalk_model.predict(source=img, imgsz=(WIDTH, HEIGHT), conf=0.25)[0]
+    car_res   = car_model.predict(source=img, imgsz=(WIDTH, HEIGHT), conf=MIN_CONF)[0]
+    xwalk_res = xwalk_model.predict(source=img, imgsz=(WIDTH, HEIGHT), conf=MIN_CONF)[0]
 
-    result_img = overlay_masks(car_r, result_img, CAR_COLOR)
-    result_img = overlay_masks(cw_r, result_img, XWALK_COLOR)
+    car_boxes = np.empty((0, 4))
+    if getattr(car_res, "boxes", None):
+        conf_mask = car_res.boxes.conf.cpu().numpy() >= MIN_CONF
+        car_boxes = car_res.boxes.xyxy.cpu().numpy()[conf_mask]
+        for (x1, y1, x2, y2) in car_boxes.astype(int):
+            cv2.rectangle(vis, (x1, y1), (x2, y2), CAR_COLOR, 2)
 
-    for r, clr in [(car_r, CAR_COLOR), (cw_r, XWALK_COLOR)]:
-        if hasattr(r, 'boxes') and r.boxes is not None:
-            for box in r.boxes.xyxy.cpu().numpy().astype(int):
-                x1, y1, x2, y2 = box
-                cv2.rectangle(result_img, (x1, y1), (x2, y2), clr, 2)
+    if getattr(xwalk_res, "masks", None) and getattr(xwalk_res, "boxes", None):
+        keep = xwalk_res.boxes.conf.cpu().numpy() >= MIN_CONF
+        masks = xwalk_res.masks.data.cpu().numpy()[keep]
+        xwalk_union = np.any(masks > MASK_THRESH, axis=0).astype(np.uint8)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (DILATE_KERNEL, DILATE_KERNEL))
+        xwalk_dilated = cv2.dilate(xwalk_union, kernel, iterations=1).astype(bool)
+        xwalk_vis_res = xwalk_res
+        xwalk_vis_res.masks.data = xwalk_res.masks.data[keep]
+        vis = overlay_masks(xwalk_vis_res, vis, XWALK_COLOR)
+    else:
+        xwalk_dilated = np.zeros(vis.shape[:2], dtype=bool)
 
-    cv2.imshow('Segmentation Overlay', result_img)
+    overlap = False
+    h, w = xwalk_dilated.shape
+    for (x1, y1, x2, y2) in car_boxes.astype(int):
+        x1, y1 = max(0, x1), max(0, y1)
+        x2, y2 = min(w - 1, x2), min(h - 1, y2)
+        if np.any(xwalk_dilated[y1:y2, x1:x2]):
+            overlap = True
+            break
 
-    # press ESC to exit early, or any key to advance
-    key = cv2.waitKey(0) & 0xFF
-    if key == 27:
+    status_text = f"Car in crosswalk: {overlap}"
+    text_color  = OVERLAP_COLOR if overlap else NO_OVERLAP_COLOR
+    cv2.putText(vis, status_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, text_color, 2)
+
+    cv2.imshow("Detection", vis)
+    print(f"{fname}: {status_text}")
+
+    if cv2.waitKey(0) & 0xFF == 27:
         break
 
 cv2.destroyAllWindows()
-print("Visual demo complete.")

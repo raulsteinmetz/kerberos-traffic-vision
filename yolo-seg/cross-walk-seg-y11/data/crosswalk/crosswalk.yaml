@@ -1,7 +1,0 @@
-# crosswalk.yaml
-path: data/crosswalk            # root relative to the YAML location
-train: train.txt                   # lists created above
-val:   val.txt
-
-names:
-  0: crosswalk

@@ -52,8 +52,8 @@ class DetectionNode(Node):
     # ---  model management  ---
     def load_models(self):
         try:
-            car_pt  = os.path.join(self.models_dir, 'car_model.pt')
-            tl_pt   = os.path.join(self.models_dir, 'crosswalk_trafficlights.pt')
+            car_pt  = os.path.join(self.models_dir, 'bb/car_model.pt')
+            tl_pt   = os.path.join(self.models_dir, 'bb/crosswalk_trafficlights.pt')
             self.car_model  = torch.hub.load('ultralytics/yolov5', 'custom',
                                              path=car_pt).to(self.device)
             self.cwtl_model = torch.hub.load('ultralytics/yolov5', 'custom',
