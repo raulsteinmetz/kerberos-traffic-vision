@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+
+import rclpy
+from rclpy.node import Node
+
+from std_msgs.msg import String, Bool
+from sensor_msgs.msg import CompressedImage, Image
+
+import cv2
+import os
+from cv_bridge import CvBridge
+
+
+class TestController(Node):
+    def __init__(self):
+        super().__init__('test_controller')
+
+        # --- publishers ---
+        self.detection_switch_pub = self.create_publisher(String, '/flag/detection_switch', 10)
+        self.load_yolo_pub = self.create_publisher(Bool, '/flag/load_yolo', 10)
+        self.image_pub = self.create_publisher(CompressedImage, '/usb_cam1/image_raw/compressed', 10)
+
+        # --- subscriber for debug images ---
+        self.create_subscription(Image, 'detection_image', self.image_callback, 10)
+
+        self.bridge = CvBridge()
+
+        # --- image loading ---
+        image_dir = os.path.expanduser('~/ros2_ws/src/traffic_detection/test_data/dataset_1')
+        self.image_files = sorted([
+            os.path.join(image_dir, f)
+            for f in os.listdir(image_dir)
+            if f.endswith('.png')
+        ])
+        self.image_index = 0
+
+        # --- publish one image per .25 second ---
+        self.timer = self.create_timer(.25, self.timer_callback)
+        self.state = 0
+
+        self.get_logger().info(f'TestController started. {len(self.image_files)} images loaded.')
+
+    def timer_callback(self):
+        if self.state == 0:
+            self.detection_switch_pub.publish(String(data='Start'))
+            self.get_logger().info('Published: Start')
+        elif self.state == 1:
+            self.load_yolo_pub.publish(Bool(data=True))
+            self.get_logger().info('Published: load_yolo = True')
+
+        if self.image_index < len(self.image_files):
+            img_path = self.image_files[self.image_index]
+            img = cv2.imread(img_path)
+
+            if img is None:
+                self.get_logger().warn(f"Failed to load image: {img_path}")
+            else:
+                msg = CompressedImage()
+                msg.header.stamp = self.get_clock().now().to_msg()
+                msg.format = "jpeg"
+                msg.data = list(cv2.imencode('.jpg', img)[1].tobytes())
+                self.image_pub.publish(msg)
+                self.get_logger().info(f'Published image: {os.path.basename(img_path)}')
+
+            self.image_index += 1
+        else:
+            self.get_logger().info('All images published. Sending Stop signal.')
+            self.detection_switch_pub.publish(String(data='Stop'))
+            self.load_yolo_pub.publish(Bool(data=False))
+            self.get_logger().info('Published stop and unload signals.')
+            self.timer.cancel()
+
+        self.state += 1
+
+    def image_callback(self, msg: Image):
+        try:
+            cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+            cv2.imshow("YOLO Detection Debug", cv_image)
+            cv2.waitKey(1)  # non-blocking wait
+        except Exception as e:
+            self.get_logger().error(f"Error converting image: {e}")
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = TestController()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+        cv2.destroyAllWindows()
+
+
+if __name__ == '__main__':
+    main()

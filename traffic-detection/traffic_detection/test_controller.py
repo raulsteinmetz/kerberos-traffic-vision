@@ -4,29 +4,24 @@ import rclpy
 from rclpy.node import Node
 
 from std_msgs.msg import String, Bool
-from sensor_msgs.msg import CompressedImage, Image
+from sensor_msgs.msg import CompressedImage
 
 import cv2
 import os
-from cv_bridge import CvBridge
+import numpy as np
 
 
 class TestController(Node):
     def __init__(self):
         super().__init__('test_controller')
 
-        # --- publishers ---
         self.detection_switch_pub = self.create_publisher(String, '/flag/detection_switch', 10)
         self.load_yolo_pub = self.create_publisher(Bool, '/flag/load_yolo', 10)
         self.image_pub = self.create_publisher(CompressedImage, '/usb_cam1/image_raw/compressed', 10)
 
-        # --- subscriber for debug images ---
-        self.create_subscription(Image, 'detection_image', self.image_callback, 10)
+        self.create_subscription(CompressedImage, 'detection_image', self.image_callback, 10)
 
-        self.bridge = CvBridge()
-
-        # --- image loading ---
-        image_dir = os.path.expanduser('~/ros2_ws/src/traffic_detection/test_data/dataset_1')
+        image_dir = os.path.expanduser('/home/raul/ros2_humble/src/traffic-detection/test-data')
         self.image_files = sorted([
             os.path.join(image_dir, f)
             for f in os.listdir(image_dir)
@@ -34,7 +29,6 @@ class TestController(Node):
         ])
         self.image_index = 0
 
-        # --- publish one image per .25 second ---
         self.timer = self.create_timer(.25, self.timer_callback)
         self.state = 0
 
@@ -72,13 +66,14 @@ class TestController(Node):
 
         self.state += 1
 
-    def image_callback(self, msg: Image):
+    def image_callback(self, msg: CompressedImage):
         try:
-            cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+            np_arr = np.frombuffer(msg.data, np.uint8)
+            cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
             cv2.imshow("YOLO Detection Debug", cv_image)
-            cv2.waitKey(1)  # non-blocking wait
+            cv2.waitKey(1)
         except Exception as e:
-            self.get_logger().error(f"Error converting image: {e}")
+            self.get_logger().error(f"Error decoding compressed image: {e}")
 
 
 def main(args=None):
