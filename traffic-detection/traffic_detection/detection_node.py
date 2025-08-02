@@ -17,6 +17,9 @@ class DetectionNode(Node):
         super().__init__("detection_node")
 
         self.image_pub = self.create_publisher(CompressedImage, "detection_image", 10)
+        self.cross_pub = self.create_publisher(Bool, "car_on_crosswalk", 10)
+        self.tl_pub = self.create_publisher(String, "traffic_light_state", 10)
+
         self.create_subscription(String, "/flag/detection_switch", self.signal_cb, 10)
         self.create_subscription(Bool, "/flag/load_yolo", self.load_cb, 10)
         self.create_subscription(
@@ -40,6 +43,8 @@ class DetectionNode(Node):
         self.MASK_T = 0.25
         self.D_KERN = 15
         self.IM = 640
+
+        self.last_tl_state = "stop"
 
     def signal_cb(self, msg: String):
         self.start = msg.data.strip().lower() == "start"
@@ -87,6 +92,14 @@ class DetectionNode(Node):
             cv2.rectangle(vis, (x1, y1), (x2, y2), (255, 0, 0), 2)
             cv2.putText(vis, lbl, (x1, y1 - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
 
+        red_detected   = any("red"   in lbl.lower() for lbl in sig_lbls)
+        green_detected = any("green" in lbl.lower() for lbl in sig_lbls)
+
+        if red_detected:
+            self.last_tl_state = "stop"
+        elif green_detected:
+            self.last_tl_state = "start"
+
         for (x1, y1, x2, y2), lbl in zip(sig_boxes, sig_lbls):
             col = (0, 0, 255) if "r" in lbl.lower() else (0, 255, 0)
             cv2.rectangle(vis, (int(x1), int(y1)), (int(x2), int(y2)), col, 2)
@@ -95,6 +108,9 @@ class DetectionNode(Node):
         txt = f"Car in crosswalk: {car_on}"
         col = (0, 255, 255) if car_on else (255, 0, 0)
         cv2.putText(vis, txt, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, col, 2)
+
+        self.cross_pub.publish(Bool(data=not car_on))
+        self.tl_pub.publish(String(data=self.last_tl_state))
 
         self.pub_img(vis)
 

@@ -20,6 +20,8 @@ class TestController(Node):
         self.image_pub = self.create_publisher(CompressedImage, '/usb_cam1/image_raw/compressed', 10)
 
         self.create_subscription(CompressedImage, 'detection_image', self.image_callback, 10)
+        self.create_subscription(String, 'traffic_light_state', self.traffic_cb, 10)
+        self.create_subscription(Bool, 'car_on_crosswalk', self.crosswalk_cb, 10)
 
         image_dir = os.path.expanduser('/home/raul/ros2_humble/src/traffic-detection/test-data')
         self.image_files = sorted([
@@ -29,10 +31,19 @@ class TestController(Node):
         ])
         self.image_index = 0
 
+        self.traffic_state = "unknown"
+        self.crosswalk_state = None
+
         self.timer = self.create_timer(.5, self.timer_callback)
         self.state = 0
 
         self.get_logger().info(f'TestController started. {len(self.image_files)} images loaded.')
+
+    def traffic_cb(self, msg: String):
+        self.traffic_state = msg.data
+
+    def crosswalk_cb(self, msg: Bool):
+        self.crosswalk_state = msg.data
 
     def timer_callback(self):
         if self.state == 0:
@@ -55,6 +66,7 @@ class TestController(Node):
                 msg.data = list(cv2.imencode('.jpg', img)[1].tobytes())
                 self.image_pub.publish(msg)
                 self.get_logger().info(f'Published image: {os.path.basename(img_path)}')
+                self.get_logger().info(f'Traffic light state: {self.traffic_state}, Car on crosswalk, safe to proceed?: {self.crosswalk_state}')
 
             self.image_index += 1
         else:
