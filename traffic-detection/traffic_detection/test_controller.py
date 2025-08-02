@@ -29,7 +29,7 @@ class TestController(Node):
         ])
         self.image_index = 0
 
-        self.timer = self.create_timer(.25, self.timer_callback)
+        self.timer = self.create_timer(.5, self.timer_callback)
         self.state = 0
 
         self.get_logger().info(f'TestController started. {len(self.image_files)} images loaded.')
