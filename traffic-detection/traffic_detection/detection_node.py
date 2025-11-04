@@ -211,6 +211,8 @@ class DetectionNode(Node):
 
     def signal_cb(self, msg: String):
         self.start = msg.data.strip().lower() == "start"
+        if self.start:
+            print("[vision info] Node activated!")
 
     def load_cb(self, msg: Bool):
         if msg.data:
@@ -218,6 +220,7 @@ class DetectionNode(Node):
                 self.car_model = YOLO(str(self.car_w))
                 self.sig_model = YOLO(str(self.sig_w))
                 self.cross_model = YOLO(str(self.cross_w))
+                print("[vision info] Models were loaded!")
             except Exception as e:
                 self.get_logger().error(f"model load: {e}")
         else:
@@ -276,6 +279,8 @@ class DetectionNode(Node):
         self.tl_pub.publish(String(data=self.last_tl_state))
 
         self.pub_img(vis)
+
+        print("[vision info] Ran image detection.")
 
     def detect(self, model, img):
         res = model.predict(img, imgsz=self.IM, conf=self.CONF, verbose=False)[0]
