@@ -1,0 +1,83 @@
+kerberos2@kerberos2-desktop:~/colcon_ws/src/kerberos_launches/docker/kerberos2/docker_ros2_boxfinder_ws$ cat output.txt
+[INFO] [launch]: All log files can be found below /root/.ros/log/2025-11-04-06-18-04-214644-kerberos2-desktop-4355
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [detection_node-1]: process started with pid [4356]
+[detection_node-1] 
+[detection_node-1] A module that was compiled using NumPy 1.x cannot be run in
+[detection_node-1] NumPy 2.2.6 as it may crash. To support both 1.x and 2.x
+[detection_node-1] versions of NumPy, modules must be compiled with NumPy 2.0.
+[detection_node-1] Some module may need to rebuild instead e.g. with 'pybind11>=2.12'.
+[detection_node-1] 
+[detection_node-1] If you are a user of the module, the easiest solution will be to
+[detection_node-1] downgrade to 'numpy<2' or try to upgrade the affected module.
+[detection_node-1] We expect that some modules will need time to support NumPy 2.
+[detection_node-1] 
+[detection_node-1] Traceback (most recent call last):  File "/root/ros2_ws/install/traffic_detection/lib/traffic_detection/detection_node", line 33, in <module>
+[detection_node-1]     sys.exit(load_entry_point('traffic-detection', 'console_scripts', 'detection_node')())
+[detection_node-1]   File "/root/ros2_ws/install/traffic_detection/lib/traffic_detection/detection_node", line 25, in importlib_load_entry_point
+[detection_node-1]     return next(matches).load()
+[detection_node-1]   File "/usr/lib/python3.10/importlib/metadata/__init__.py", line 171, in load
+[detection_node-1]     module = import_module(match.group('module'))
+[detection_node-1]   File "/usr/lib/python3.10/importlib/__init__.py", line 126, in import_module
+[detection_node-1]     return _bootstrap._gcd_import(name[level:], package, level)
+[detection_node-1]   File "/root/ros2_ws/build/traffic_detection/traffic_detection/detection_node.py", line 173, in <module>
+[detection_node-1]     from cv_bridge import CvBridge
+[detection_node-1]   File "/opt/ros/humble/local/lib/python3.10/dist-packages/cv_bridge/__init__.py", line 6, in <module>
+[detection_node-1]     from cv_bridge.boost.cv_bridge_boost import cvtColorForDisplay, getCvType
+[detection_node-1] AttributeError: _ARRAY_API not found
+[detection_node-1] [INFO] [1762237118.374236352] [detection_node]: [vision info] Node activated!
+[detection_node-1] [INFO] [1762237119.374252312] [detection_node]: [vision info] Node activated!
+[detection_node-1] [INFO] [1762237120.374226184] [detection_node]: [vision info] Node activated!
+[detection_node-1] [INFO] [1762237121.374070845] [detection_node]: [vision info] Node activated!
+[detection_node-1] [INFO] [1762237122.374259902] [detection_node]: [vision info] Node activated!
+[detection_node-1] [INFO] [1762237123.374254421] [detection_node]: [vision info] Node activated!
+[detection_node-1] [INFO] [1762237124.374242706] [detection_node]: [vision info] Node activated!
+[detection_node-1] [INFO] [1762237125.374089654] [detection_node]: [vision info] Node activated!
+[detection_node-1] [INFO] [1762237126.374279444] [detection_node]: [vision info] Node activated!
+[detection_node-1] [INFO] [1762237127.374035856] [detection_node]: [vision info] Node activated!
+[detection_node-1] [INFO] [1762237130.119638813] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237131.136359573] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237132.122314463] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237133.115254446] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237134.151657779] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237135.108451405] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237136.147681229] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237137.109904804] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237138.107767948] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237139.143661907] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237140.113098669] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237141.113681701] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237142.141421173] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237143.105096218] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237144.141492689] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237145.134641881] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237146.102856178] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237147.158539479] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237148.108099830] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237149.148759786] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237150.108190813] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237151.116637620] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237152.141468370] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237153.129387138] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237154.113837836] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237155.187076121] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237156.106998643] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237157.150313186] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237158.107213752] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237159.112255916] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237160.174298971] [detection_node]: [vision info] Models were loaded!
+[detection_node-1] [INFO] [1762237161.105498745] [detection_node]: [vision info] Models were loaded!
+[WARNING] [launch]: user interrupted with ctrl-c (SIGINT)
+[detection_node-1] Traceback (most recent call last):
+[detection_node-1]   File "/root/ros2_ws/install/traffic_detection/lib/traffic_detection/detection_node", line 33, in <module>
+[detection_node-1]     sys.exit(load_entry_point('traffic-detection', 'console_scripts', 'detection_node')())
+[detection_node-1]   File "/root/ros2_ws/build/traffic_detection/traffic_detection/detection_node.py", line 319, in main
+[detection_node-1]     rclpy.shutdown()
+[detection_node-1]   File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/__init__.py", line 130, in shutdown
+[detection_node-1]     _shutdown(context=context)
+[detection_node-1]   File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/utilities.py", line 58, in shutdown
+[detection_node-1]     return context.shutdown()
+[detection_node-1]   File "/opt/ros/humble/local/lib/python3.10/dist-packages/rclpy/context.py", line 102, in shutdown
+[detection_node-1]     self.__context.shutdown()
+[detection_node-1] rclpy._rclpy_pybind11.RCLError: failed to shutdown: rcl_shutdown already called on the given context, at ./src/rcl/init.c:241
+[ERROR] [detection_node-1]: process has died [pid 4356, exit code 1, cmd '/root/ros2_ws/install/traffic_detection/lib/traffic_detection/detection_node --ros-args -r __node:=detection_node'].
