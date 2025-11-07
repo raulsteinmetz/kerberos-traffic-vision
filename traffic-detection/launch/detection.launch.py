@@ -6,8 +6,8 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
             package='traffic_detection',
-            executable='detection_node',
-            name='detection_node',
+            executable='traffic_detection',
+            name='traffic_detection',
             output='screen',
         )
     ])

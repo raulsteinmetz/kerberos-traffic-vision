@@ -19,12 +19,12 @@ setup(
     zip_safe=True,
     maintainer='raul',
     maintainer_email='raulsteinmetz0808@gmail.com',
-    description='Minimal ROS 2 node with pub/sub for testing.',
+    description='Traffic detection node for kerberos.',
     license='MIT',
     entry_points={
         'console_scripts': [
-            'detection_node = traffic_detection.detection_node:main',
-            'test_controller = traffic_detection.test_controller:main',
+            'traffic_detection = traffic_detection.traffic_detection:main',
+            'test_traffic_detection = traffic_detection.test_traffic_detection:main',
         ],
     },
 )
